@@ -192,4 +192,5 @@ variable "key_vault_key_id" {
 variable "disk_encryption_set_enabled_aks" {
   description = "condition whether to create disk encryption set"
   type        = bool
+  default     = false
 }

@@ -194,9 +194,3 @@ variable "identity" {
   type        = any
   default     = []
 }
-
-
-
-
-
-
