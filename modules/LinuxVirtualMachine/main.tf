@@ -65,7 +65,7 @@ resource "azurerm_linux_virtual_machine" "az_linux_virtual_machine" {
     for_each = var.admin_ssh_key
     content {
       username   = var.admin_username
-      public_key = lookup(admin_ssh_key.value, "offer", null)
+      public_key = lookup(admin_ssh_key.value, "public_key", null)
     }
   }
 

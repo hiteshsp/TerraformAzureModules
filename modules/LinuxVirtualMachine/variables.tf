@@ -130,7 +130,7 @@ variable "availability_set_id" {
 variable "zones" {
   description = "A list of a single item of the Availability Zone which the Virtual Machine should be allocated in"
   type        = string
-  default     = "1"
+  default     = null
 }
 
 variable "linux_vm_tags" {

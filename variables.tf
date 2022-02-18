@@ -254,14 +254,7 @@ variable "virtual_machine_size" {
 variable "admin_username" {
   description = "The admin username of the VM that will be deployed."
   type        = string
-  default     = "admin"
-}
-
-variable "admin_password" {
-  description = "The admin password to be used on the VMSS that will be deployed. The password must meet the complexity requirements of Azure."
-  type        = string
-  default     = ""
-  sensitive   = true
+  default     = "adminuser"
 }
 
 variable "network_interface_ids" {
@@ -276,46 +269,16 @@ variable "provision_vm_agent" {
   default     = false
 }
 
-variable "source_image_id" {
-  description = "The ID of the Image which this Virtual Machine should be created from. Changing this forces a new resource to be created"
-  type        = string
-  default     = null
-}
-
-variable "allow_extension_operations" {
-  description = "Should Extension Operations be allowed on this Virtual Machine"
-  type        = bool
-  default     = false
-}
-
-variable "computer_name" {
-  description = "Specifies the Hostname which should be used for this Virtual Machine"
-  type        = string
-  default     = ""
-}
-
-variable "disable_password_authentication" {
-  description = "Should Password Authentication be disabled on this Virtual Machine? Defaults to true"
-  type        = bool
-  default     = true
-}
-
-variable "priority" {
-  description = "Specifies the duration allocated for all extensions to start"
-  type        = string
-  default     = "Regular"
-}
-
-variable "zones" {
-  description = "A list of a single item of the Availability Zone which the Virtual Machine should be allocated in"
-  type        = string
-  default     = "1"
-}
-
 variable "linux_vm_tags" {
   description = "A map of the tags to use on the resources that are deployed with this module."
   type        = map(string)
   default     = {}
+}
+
+variable "os_disk" {
+  description = "os disk reference block"
+  type        = list(map(string))
+  default     = []
 }
 
 # admin ssh key vars
@@ -332,9 +295,24 @@ variable "source_image_reference" {
   default     = {}
 }
 
-# plan vars
-variable "plan" {
-  description = "image details form the market place"
-  type        = list(map(string))
-  default     = []
+
+
+## Network interface common vars
+variable "network_interface_name" {
+  description = "The name of the Network Interface. Changing this forces a new resource to be created"
+  type        = string
+  default     = "nic"
+}
+
+# ip config vars
+
+variable "ip_configuration" {
+  description = "A list of IP Addresses defining the DNS Servers which should be used for this Network Interface"
+  type        = list(map(any))
+}
+
+variable "network_interface_tags" {
+  description = "The tags to associate with your network network interface."
+  type        = map(string)
+  default     = {}
 }

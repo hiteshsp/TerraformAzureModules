@@ -7,6 +7,3 @@ module "network_interface" {
   network_interface_tags = var.tags
   ip_configuration_name  = var.ip_configuration_name
 }
-
-
-
