@@ -67,6 +67,12 @@ variable "vm_subnet_name" {
   default     = ""
 }
 
+variable "plan" {
+  description = "image details form the market place"
+  type        = list(map(string))
+  default     = []
+}
+
 variable "vm_subnet_address_prefix" {
   description = "The address prefix list to use for the subnet"
   type        = list(string)

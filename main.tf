@@ -27,7 +27,7 @@ module "vm_subnet" {
    create_subnet_nsg_association        = var.create_subnet_nsg_association
    create_subnet_routetable_association = var.create_subnet_routetable_association
  }
-/*
+
  module "container_registry" {
    source                   = "./modules/ACR"
    container_registry_name  = var.container_registry_name
@@ -67,7 +67,7 @@ module "vm_subnet" {
    depends_on = [ module.k8s_subnet ]
  }
 
-*/
+
 module "network_interface" {
   source                 = "./modules/NetworkInterface"
   network_interface_name = var.network_interface_name
@@ -75,6 +75,8 @@ module "network_interface" {
   resource_group_name    = module.resource_group.az_resource_group_name
   network_interface_tags = var.network_interface_tags
   ip_configuration       = var.ip_configuration
+
+  depends_on = [module.vm_subnet]
 }
 
  
@@ -89,35 +91,7 @@ module "linux_vm" {
   os_disk               = var.os_disk
   source_image_reference = var.source_image_reference
   linux_vm_tags         = var.linux_vm_tags
-  virtual_machine_size  = "Standard_D2s_v3"
+  virtual_machine_size  = var.virtual_machine_size
 
   depends_on = [module.vm_subnet]
-}
-
-resource "azurerm_linux_virtual_machine" "example" {
-  name                = "example-machine"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  size                = "Standard_F2"
-  admin_username      = "adminuser"
-  network_interface_ids = [
-    azurerm_network_interface.example.id,
-  ]
-
-  admin_ssh_key {
-    username   = "adminuser"
-    public_key = file("~/.ssh/id_rsa.pub")
-  }
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
-    version   = "latest"
-  }
 }
