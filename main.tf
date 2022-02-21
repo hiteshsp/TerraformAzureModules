@@ -1,123 +1,96 @@
 module "resource_group" {
-   source              = "./modules/ResourceGroup"
-   location            = var.location
-   name                = var.name
-   rg_tags             = var.rg_tags
+  source   = "./modules/ResourceGroup"
+  location = var.location
+  name     = var.name
+  rg_tags  = var.rg_tags
 }
 
 module "virtual_network" {
-   source                     = "./modules/VNet"
-   virtual_network_name       = var.virtual_network_name
-   resource_group_name        = module.resource_group.az_resource_group_name
-   location                   = var.location
-   vnet_address_space         = var.vnet_address_space
-   dns_servers                = var.dns_servers
-   ddos_protection_plan       = var.ddos_protection_plan
-   vnet_tags                  = var.vnet_tags
+  for_each = var.vnets
+
+  source               = "./modules/VNet"
+  virtual_network_name = each.value.virtual_network_name
+  resource_group_name  = module.resource_group.az_resource_group_name
+  location             = var.location
+  vnet_address_space   = each.value.vnet_address_space
+  dns_servers          = each.value.dns_servers
+  ddos_protection_plan = each.value.ddos_protection_plan
+  vnet_tags            = each.value.vnet_tags
 }
 
-module "vm_subnet" {   
-   source                        = "./modules/Subnet"
-   subnet_name                   = var.vm_subnet_name
-   resource_group_name           = module.resource_group.az_resource_group_name
-   virtual_network_name          = module.virtual_network.az_virtual_network_name
-   subnet_address_prefix         = var.vm_subnet_address_prefix
-   service_endpoints             = var.service_endpoints
-   subnet_delegation             = var.subnet_delegation
-   create_subnet_nsg_association        = var.create_subnet_nsg_association
-   create_subnet_routetable_association = var.create_subnet_routetable_association
- }
-/*
- module "container_registry" {
-   source                   = "./modules/ACR"
-   container_registry_name  = var.container_registry_name
-   location                 = module.resource_group.az_resource_group_location
-   resource_group_name      = module.resource_group.az_resource_group_name
-   sku                      = var.sku
-   admin_enabled            = var.admin_enabled
-   georeplication_locations = var.georeplication_locations
-   acr_tags                 = var.acr_tags
- }
+module "subnets" {
+  for_each = var.subnets
+
+  source                               = "./modules/Subnet"
+  subnet_name                          = each.value.subnet_name
+  resource_group_name                  = module.resource_group.az_resource_group_name
+  virtual_network_name                 = module.virtual_network["vnet1"].az_virtual_network_name
+  subnet_address_prefix                = each.value.subnet_address_prefix
+  service_endpoints                    = each.value.service_endpoints
+  subnet_delegation                    = each.value.subnet_delegation
+  create_subnet_nsg_association        = each.value.create_subnet_nsg_association
+  create_subnet_routetable_association = each.value.create_subnet_routetable_association
+}
+
+module "container_registry" {
+  for_each = var.container_registries
+
+  source                   = "./modules/ACR"
+  container_registry_name  = each.value.container_registry_name
+  location                 = module.resource_group.az_resource_group_location
+  resource_group_name      = module.resource_group.az_resource_group_name
+  sku                      = each.value.sku
+  admin_enabled            = each.value.admin_enabled
+  georeplication_locations = each.value.georeplication_locations
+  acr_tags                 = each.value.acr_tags
+}
 
 
- module "k8s_subnet" {   
-   source                        = "./modules/Subnet"
-   subnet_name                   = var.k8s_subnet_name
-   resource_group_name           = module.resource_group.az_resource_group_name
-   virtual_network_name          = module.virtual_network.az_virtual_network_name
-   subnet_address_prefix         = var.k8s_subnet_address_prefix
-   service_endpoints             = var.service_endpoints
-   subnet_delegation             = var.subnet_delegation
-   create_subnet_nsg_association        = var.create_subnet_nsg_association
-   create_subnet_routetable_association = var.create_subnet_routetable_association
- }
+module "kubernetes_cluster" {
+  for_each = var.kubernetes
+
+  source                  = "./modules/AKS"
+  kubernetes_cluster_name = each.value.kubernetes_cluster_name
+  location                = module.resource_group.az_resource_group_location
+  resource_group_name     = module.resource_group.az_resource_group_name
+  vnet_subnet_id          = module.subnets["k8s_subnet"].az_subnet_id
+  kubernetes_version      = each.value.kubernetes_version
+  k8s_default_pool        = each.value.k8s_default_pool
+  k8s_tags                = each.value.k8s_tags
+  aks_dns_prefix_name     = each.value.aks_dns_prefix_name
+
+  depends_on = [module.subnets["k8s_subnet"]]
+}
 
 
- module "kubernetes_cluster" {
-   source                  = "./modules/AKS"
-   kubernetes_cluster_name = var.kubernetes_cluster_name
-   location                = module.resource_group.az_resource_group_location
-   resource_group_name     = module.resource_group.az_resource_group_name
-   vnet_subnet_id          = module.k8s_subnet.az_subnet_id
-   kubernetes_version      = var.kubernetes_version
-   k8s_default_pool        = var.k8s_default_pool
-   k8s_tags                = var.k8s_tags
-   aks_dns_prefix_name     = var.aks_dns_prefix_name
-
-   depends_on = [ module.k8s_subnet ]
- }
-
-*/
 module "network_interface" {
+  for_each = var.network_interfaces
+
   source                 = "./modules/NetworkInterface"
-  network_interface_name = var.network_interface_name
+  network_interface_name = each.value.network_interface_name
   location               = module.resource_group.az_resource_group_location
   resource_group_name    = module.resource_group.az_resource_group_name
-  network_interface_tags = var.network_interface_tags
-  ip_configuration       = var.ip_configuration
+  network_interface_tags = each.value.network_interface_tags
+  ip_configuration       = each.value.ip_configuration
+
+  depends_on = [module.subnets["vm_subnet"]]
 }
 
- 
+
 module "linux_vm" {
-  source                = "./modules/LinuxVirtualMachine"
-  linux_vm_name         = var.linux_vm_name
-  location              = module.resource_group.az_resource_group_location
-  resource_group_name   = module.resource_group.az_resource_group_name
-  admin_username        = var.admin_username
-  admin_ssh_key         = var.admin_ssh_key
-  network_interface_ids = [module.network_interface.az_network_interface_id]
-  os_disk               = var.os_disk
-  source_image_reference = var.source_image_reference
-  linux_vm_tags         = var.linux_vm_tags
-  virtual_machine_size  = "Standard_D2s_v3"
+  for_each = var.linux_vms
 
-  depends_on = [module.vm_subnet]
-}
+  source                 = "./modules/LinuxVirtualMachine"
+  linux_vm_name          = each.value.linux_vm_name
+  location               = module.resource_group.az_resource_group_location
+  resource_group_name    = module.resource_group.az_resource_group_name
+  admin_username         = each.value.admin_username
+  admin_ssh_key          = each.value.admin_ssh_key
+  network_interface_ids  = [module.network_interface["vm1"].az_network_interface_id]
+  os_disk                = each.value.os_disk
+  source_image_reference = each.value.source_image_reference
+  linux_vm_tags          = each.value.linux_vm_tags
+  virtual_machine_size   = each.value.virtual_machine_size
 
-resource "azurerm_linux_virtual_machine" "example" {
-  name                = "example-machine"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  size                = "Standard_F2"
-  admin_username      = "adminuser"
-  network_interface_ids = [
-    azurerm_network_interface.example.id,
-  ]
-
-  admin_ssh_key {
-    username   = "adminuser"
-    public_key = file("~/.ssh/id_rsa.pub")
-  }
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
-    version   = "latest"
-  }
+  depends_on = [module.subnets]
 }
