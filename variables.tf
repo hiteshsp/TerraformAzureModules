@@ -91,12 +91,11 @@ variable "linux_vms" {
 variable "network_interfaces" {
   description = "Azure NIC"
   type = map(object({
-    network_interface_name    = string
-    network_interface_tags    = map(string)
-    ip_configuration          = list(map(any))
-    enable_ip_forwarding      = bool
-    create_nsg_association    = bool
-    network_security_group_id = string
+    network_interface_name = string
+    network_interface_tags = map(string)
+    ip_configuration       = list(map(any))
+    enable_ip_forwarding   = bool
+    create_nsg_association = bool
   }))
   default = {}
 }
@@ -107,9 +106,25 @@ variable "network_interfaces" {
 variable "nsgs" {
   description = "Azure NSGs"
   type = map(object({
-    network_security_group_name = string
-    nsg_tags                    = map(string)
-    nsg_rules                   = list(map(string))
+    security_group_name = string
+    nsg_tags            = map(string)
+    nsg_rules = list(object({
+      name                                       = string
+      priority                                   = number
+      direction                                  = string
+      access                                     = string
+      protocol                                   = string
+      source_port_range                          = string
+      destination_port_range                     = string
+      source_address_prefix                      = string
+      source_address_prefixes                    = list(string)
+      destination_address_prefix                 = string
+      destination_address_prefixes               = list(string)
+      description                                = string
+      source_application_security_group_ids      = list(string)
+      destination_application_security_group_ids = list(string)
+
+    }))
   }))
   default = {}
 }
@@ -117,16 +132,6 @@ variable "nsgs" {
 ## Public IP Vars
 variable "publicIPs" {
   description = "Azure Public IPs"
-  type = map(object({
-    public_ip_name = string
-    ip_address = map(object({
-      allocation_method = string
-      sku               = string
-      ip_version        = string
-      timeout           = number
-      zones             = list(number)
-    }))
-    tags = map(string)
-  }))
-  default = {}
+  type        = any
+  default     = {}
 }
