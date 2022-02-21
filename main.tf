@@ -63,17 +63,42 @@ module "kubernetes_cluster" {
 }
 
 
+module "nsg" {
+  for_each = var.nsgs
+
+  source                      = "./modules/AzureNSG"
+  network_security_group_name = each.value.network_security_group_name
+  location                    = module.resource_group.az_resource_group_location
+  resource_group_name         = module.resource_group.az_resource_group_name
+  nsg_tags                    = each.value.nsg_tags
+  nsg_rules                   = each.value.nsg_rules
+}
+
+
+module "public_ip" {
+  for_each = var.publicIPs
+
+  source              = "./modules/AzurePublicIP"
+  public_ip_name      = var.public_ip_name
+  location            = module.resource_group.az_resource_group_location
+  resource_group_name = module.resource_group.az_resource_group_name
+  ip_address          = each.value.ip_address
+  tags                = each.value.tags
+}
+
+
 module "network_interface" {
   for_each = var.network_interfaces
 
-  source                 = "./modules/NetworkInterface"
-  network_interface_name = each.value.network_interface_name
-  location               = module.resource_group.az_resource_group_location
-  resource_group_name    = module.resource_group.az_resource_group_name
-  network_interface_tags = each.value.network_interface_tags
-  ip_configuration       = each.value.ip_configuration
-
-  depends_on = [module.subnets["vm_subnet"]]
+  source                    = "./modules/NetworkInterface"
+  network_interface_name    = each.value.network_interface_name
+  location                  = module.resource_group.az_resource_group_location
+  resource_group_name       = module.resource_group.az_resource_group_name
+  network_interface_tags    = each.value.network_interface_tags
+  ip_configuration          = each.value.ip_configuration
+  create_nsg_association    = each.value.create_nsg_association
+  network_security_group_id = module.nsgs.az_network_security_group_id
+  depends_on                = [module.subnets["vm_subnet"], module.public_ip]
 }
 
 

@@ -91,9 +91,41 @@ variable "linux_vms" {
 variable "network_interfaces" {
   description = "Azure NIC"
   type = map(object({
-    network_interface_name = string
-    network_interface_tags = map(string)
-    ip_configuration       = list(map(any))
+    network_interface_name    = string
+    network_interface_tags    = map(string)
+    ip_configuration          = list(map(any))
+    enable_ip_forwarding      = bool
+    create_nsg_association    = bool
+    network_security_group_id = string
+  }))
+  default = {}
+}
+
+
+## NGS Vars
+
+variable "nsgs" {
+  description = "Azure NSGs"
+  type = map(object({
+    network_security_group_name = string
+    nsg_tags                    = map(string)
+    nsg_rules                   = list(map(string))
+  }))
+  default = {}
+}
+
+variable "publicIPs" {
+  description = "Azure Public IPs"
+  type = map(object({
+    public_ip_name = string
+    ip_address = map(object({
+      allocation_method = string
+      sku               = string
+      ip_version        = string
+      timeout           = number
+      zones             = list(number)
+    }))
+    tags = map(string)
   }))
   default = {}
 }
