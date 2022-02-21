@@ -114,6 +114,7 @@ variable "nsgs" {
   default = {}
 }
 
+## Public IP Vars
 variable "publicIPs" {
   description = "Azure Public IPs"
   type = map(object({
