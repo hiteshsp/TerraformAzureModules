@@ -4,6 +4,8 @@
 
 .terraform.lock.hcl
 
+# Terraform binary in root 
+terraform
 
 # .tfstate files
 *.tfstate
