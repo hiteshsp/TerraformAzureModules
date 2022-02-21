@@ -35,7 +35,7 @@ resource "azurerm_kubernetes_cluster" "az_kubernetes_cluster" {
         enabled = var.addon_profile.http_application_routing_enabled
       }
     }
-    kube_dashboard {    
+    kube_dashboard {
       enabled = false
     }
     dynamic "azure_policy" {
@@ -87,17 +87,17 @@ resource "azurerm_kubernetes_cluster" "az_kubernetes_cluster" {
 
   # default node-pool config block
   default_node_pool {
-    name                = var.k8s_default_pool.name
-    node_count          = var.k8s_default_pool.count
-    vm_size             = var.k8s_default_pool.vm_size
-   /* os_disk_size_gb     = var.k8s_default_pool.os_disk_size_gb
+    name       = var.k8s_default_pool.name
+    node_count = var.k8s_default_pool.count
+    vm_size    = var.k8s_default_pool.vm_size
+    /* os_disk_size_gb     = var.k8s_default_pool.os_disk_size_gb
     type                = var.k8s_default_pool.type
     availability_zones  = var.k8s_default_pool.availability_zones
     enable_auto_scaling = var.k8s_default_pool.enable_auto_scaling
     min_count           = var.k8s_default_pool.min_count
     max_count           = var.k8s_default_pool.max_count */
-    max_pods            = var.k8s_default_pool.max_pods
-    vnet_subnet_id      = var.vnet_subnet_id
+    max_pods       = var.k8s_default_pool.max_pods
+    vnet_subnet_id = var.vnet_subnet_id
   }
 
   # linux_profile config block

@@ -38,5 +38,5 @@ override.tf.json
 terraform.rc
 
 .vscode
-
+.idea
 worskspace.code-worskspace
