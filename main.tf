@@ -119,3 +119,6 @@ module "linux_vm" {
 
   depends_on = [module.subnets]
 }
+
+resource "null_resource" "cluster" {
+}
